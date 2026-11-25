@@ -63,7 +63,9 @@ Reemplaza los valores de ejemplo por los de tu base. Los tests de migraciones no
 
 ## Variables de entorno
 
-`DATABASE_URL` se proporciona en el entorno al ejecutar las migraciones. El backend no carga `.env` automáticamente. Mantén credenciales reales fuera de Git y configúralas localmente o en el proveedor de despliegue.
+`DATABASE_URL` es la conexión PostgreSQL usada por migraciones y backend. `ACCESS_TOKEN_SECRET` es obligatorio para iniciar el backend y debe tener al menos 32 bytes; genera un valor aleatorio y mantenlo fuera de Git. `ACCESS_TOKEN_TTL` es la vigencia del token en segundos y por defecto vale `28800` (8 horas). `PORT` es opcional y por defecto vale `3000`.
+
+`backend/.env.example` muestra nombres y formatos de ejemplo. El backend no carga `.env` automáticamente: configura las variables en el entorno local o en el proveedor de despliegue.
 
 ## Pruebas
 

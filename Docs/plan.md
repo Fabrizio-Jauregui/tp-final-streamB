@@ -26,7 +26,7 @@ Enums PostgreSQL: `user_role(client, admin)`, `asset_status(available, maintenan
 
 ### AuthSession
 - `id UUID PK`; `user_id UUID FK -> User NOT NULL`; `token_id UUID UNIQUE NOT NULL` (claim `jti`); `created_at TIMESTAMPTZ NOT NULL`; `expires_at TIMESTAMPTZ NOT NULL`; `revoked_at TIMESTAMPTZ NULL`.
-- Login emite JWT Bearer firmado con HS256 y `ACCESS_TOKEN_SECRET` de entorno; vigencia inicial de 8 horas, configurable con `ACCESS_TOKEN_TTL`. El middleware valida firma, algoritmo permitido, expiración, `jti`, sesión no revocada y usuario activo. Logout revoca el `jti`. Las contraseñas usan Argon2id; nunca se almacena o devuelve la contraseña/hash. El secreto no se registra en logs.
+- Login emite JWT Bearer firmado con HS256 y `ACCESS_TOKEN_SECRET` de entorno (mínimo 32 bytes UTF-8); vigencia inicial de 8 horas, configurable con `ACCESS_TOKEN_TTL` en segundos. El middleware valida firma, algoritmo permitido, expiración, `jti`, sesión no revocada y usuario activo. Logout revoca el `jti`. Las contraseñas usan Argon2id; nunca se almacena o devuelve la contraseña/hash. El secreto no se registra en logs.
 
 ### EquipmentType
 - `id UUID PK`; `name VARCHAR(120) NOT NULL`; `description TEXT NOT NULL`; `hourly_rate_ars NUMERIC(12,2) NULL CHECK (hourly_rate_ars IS NULL OR hourly_rate_ars >= 0)`; `is_active BOOLEAN NOT NULL DEFAULT TRUE`; `created_at TIMESTAMPTZ NOT NULL`.

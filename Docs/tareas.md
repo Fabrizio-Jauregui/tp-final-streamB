@@ -76,7 +76,7 @@
 - **Cubre HU:** HU-03, HU-05 a HU-09 en lo relativo a identidad y permisos.
 - **Depende de:** T-01, T-03.
 - **Terminada cuando:** pruebas cubren registro, email duplicado, hash no expuesto, tokens ausente/inválido/expirado/revocado, permisos y propiedad.
-- **Estado:** pendiente.
+- **Estado:** hecha.
 
 ### T-09 — Servicios de catálogo e inventario
 - **Agente:** tester + backend.
