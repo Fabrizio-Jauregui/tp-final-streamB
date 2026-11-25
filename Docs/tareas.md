@@ -38,7 +38,7 @@
 - **Cubre HU:** HU-01, HU-06.
 - **Depende de:** T-02.
 - **Terminada cuando:** pruebas de esquema verifican estados permitidos, código único, tarifa no negativa y claves foráneas.
-- **Estado:** pendiente.
+- **Estado:** hecha.
 
 ### T-05 — Esquema de reservas y asignaciones
 - **Agente:** tester + backend.
