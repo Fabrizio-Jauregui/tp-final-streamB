@@ -49,13 +49,25 @@ npm run build
 npm start
 ```
 
+## Base de datos y migraciones
+
+El ejecutor de migraciones usa `DATABASE_URL` explícitamente. En PowerShell, configura la conexión a tu instancia PostgreSQL antes de migrar:
+
+```powershell
+$env:DATABASE_URL = "postgresql://usuario:clave@localhost:5432/base"
+npm run db:migrate
+npm run db:rollback
+```
+
+Reemplaza los valores de ejemplo por los de tu base. Los tests de migraciones no leen `DATABASE_URL`: levantan una base PostgreSQL aislada en memoria y la cierran al terminar. Las pruebas de concurrencia posteriores también se ejecutarán contra PostgreSQL nativo.
+
 ## Variables de entorno
 
-Los secretos y credenciales se configurarán localmente y en el proveedor de despliegue. Nunca subir archivos `.env` con valores reales. Se agregará un `.env.example` cuando se definan las variables necesarias.
+`DATABASE_URL` se proporciona en el entorno al ejecutar las migraciones. El backend no carga `.env` automáticamente. Mantén credenciales reales fuera de Git y configúralas localmente o en el proveedor de despliegue.
 
 ## Pruebas
 
-Cada tarea sigue el flujo de pruebas primero, implementación y revisión contra `Docs/spec.md` y `Docs/plan.md`. En el backend, `npm test` ejecuta Vitest con Supertest.
+Cada tarea sigue el flujo de pruebas primero, implementación y revisión contra `Docs/spec.md` y `Docs/plan.md`. En el backend, `npm test` ejecuta Vitest, Supertest y las pruebas PostgreSQL aisladas con PGlite.
 
 ## Entrega
 

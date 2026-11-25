@@ -20,7 +20,7 @@
 - **Cubre HU:** ninguna directamente.
 - **Depende de:** T-01.
 - **Terminada cuando:** una prueba de integración conecta, aplica una migración de prueba y la revierte correctamente.
-- **Estado:** pendiente.
+- **Estado:** hecha.
 
 ### T-03 — Esquema de usuarios y sesiones
 - **Agente:** tester + backend.

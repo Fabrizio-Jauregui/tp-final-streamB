@@ -11,7 +11,7 @@
 - **Services:** reglas RN, transacciones, autorización contextual, cálculo de cotizaciones y transiciones operativas.
 - **Repositories:** SQL parametrizado y mapeo de filas; no deciden reglas.
 - **Infraestructura:** PostgreSQL, migraciones, reloj, hasher de contraseña, emisor/validador de tokens y configuración por variables de entorno.
-- **Pruebas:** Vitest; Supertest para API; PostgreSQL de prueba para migraciones, constraints y concurrencia; Vitest + React Testing Library para interfaz.
+- **Pruebas:** Vitest; Supertest para API; PGlite en memoria sobre el protocolo PostgreSQL para pruebas aisladas de migraciones y SQL; Vitest + React Testing Library para interfaz. Las pruebas de concurrencia y compatibilidad de servidor se ejecutan además contra PostgreSQL nativo.
 
 ## 2. Modelo de datos relacional
 
@@ -157,7 +157,7 @@ El frontend llama esos contratos y presenta resultados/errores; nunca reemplaza 
 - `Clock` es una interfaz inyectada en servicios. `SystemClock` entrega el instante actual; `FixedClock` de tests permite fijar y avanzar el tiempo sin esperar.
 - El backend guarda instantes UTC y exige ISO-8601 con `Z` o desplazamiento explícito en APIs. La regla de calendario/presentación interpreta `America/Argentina/Buenos_Aires` usando base IANA, nunca sumando/restando `-03:00` a mano.
 - Casos de prueba: cambio de día UTC vs Buenos Aires; retiro a futuro, exactamente ahora y pasado; fin igual a inicio (adyacente); fin anterior a inicio; duración 1h/336h y sobre límites; expiración por no retiro; cancelar justo antes y justo al retiro.
-- Casos de integración de reglas: concurrencia de dos reservas para la última unidad; transacción multínea sin reserva parcial; constraint GiST para intervalos superpuestos y adyacentes; mantenimiento concurrente con reserva; unidad con custodia demorada y reserva futura afectada; reasignación con motivo; retiro dañado/ausente que registra incidencia pero no entrega ninguna unidad; devolución completa/faltante.
+- Casos de integración de reglas: concurrencia de dos reservas para la última unidad; transacción multínea sin reserva parcial; constraint GiST para intervalos superpuestos y adyacentes; mantenimiento concurrente con reserva; unidad con custodia demorada y reserva futura afectada; reasignación con motivo; retiro dañado/ausente que registra incidencia pero no entrega ninguna unidad; devolución completa/faltante. PGlite proporciona PostgreSQL real para pruebas aisladas de migraciones y SQL, pero su servidor de socket multiplexa una única base; los casos que dependen de concurrencia/locks se deben ejecutar también contra un servidor PostgreSQL nativo.
 - Casos monetarios: cotización de varias líneas, tarifa modificada después de confirmar y fracciones de centavo para probar suma antes de redondear; usar aritmética racional de enteros/`BigInt`, nunca `number` binario.
 - Auth tests cubren token ausente, firma/algoritmo inválidos, expirado, `jti` revocado, usuario inactivo, rol insuficiente, logout, registro que siempre asigna rol cliente, Argon2id y que hash/secreto no aparezcan en responses.
 
