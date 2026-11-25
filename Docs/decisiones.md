@@ -27,7 +27,7 @@ Las decisiones siguientes son propuestas de diseño tomadas por Codex para hacer
 - **Resuelve:** PA-01.
 
 ### D-05 — Estado de unidad
-- **Decisión:** una unidad puede estar `disponible`, `mantenimiento`, `no localizada` o `retirada`. Una unidad no localizada o retirada no se asigna; una unidad en mantenimiento no se asigna durante las fechas bloqueadas.
+- **Decisión:** una unidad puede estar `disponible`, `mantenimiento`, `no localizada` o `retirada`. Los estados `no localizada`, `retirada` y `mantenimiento` no se asignan. El estado `mantenimiento` es una condición general hasta que el administrador la habilite; un bloqueo programado por intervalo es un registro separado para unidades que siguen disponibles en general.
 - **Resuelve:** PA-01, PA-12.
 
 ### D-06 — Intervalo del alquiler
@@ -64,7 +64,7 @@ Las decisiones siguientes son propuestas de diseño tomadas por Codex para hacer
 ## Precio, pagos y cancelaciones
 
 ### D-13 — Tarifa
-- **Decisión:** cada tipo/modelo tiene una tarifa por hora en pesos argentinos (ARS). El precio se calcula como tarifa por hora × duración exacta en horas × cantidad; la duración se obtiene de minutos transcurridos divididos por 60. El total se redondea a dos decimales con mitad hacia arriba. El sistema conserva una copia del precio y total al confirmar; no hay descuentos ni impuestos desglosados en v1.
+- **Decisión:** cada tipo/modelo tiene una tarifa por hora en pesos argentinos (ARS). El precio de cada línea se calcula como tarifa por hora × duración exacta en horas × cantidad; la duración se obtiene de minutos transcurridos divididos por 60. El total de una reserva con varias líneas es la suma de los subtotales exactos, y ese total se redondea a dos decimales con mitad hacia arriba. No se redondean líneas por separado. El sistema conserva una copia de la tarifa y el total al confirmar; no hay descuentos ni impuestos desglosados en v1.
 - **Justificación:** fórmula transparente y fácil de verificar; el precio histórico no cambia si luego cambia la tarifa.
 - **Resuelve:** PA-06.
 ### D-14 — Precio faltante
@@ -91,7 +91,7 @@ Las decisiones siguientes son propuestas de diseño tomadas por Codex para hacer
 - **Resuelve:** PA-10.
 
 ### D-19 — Daños y faltantes
-- **Decisión:** en entrega y devolución el administrador puede registrar condición (`correcto`, `dañado`, `faltante`) y una observación. Una unidad dañada queda en mantenimiento; una unidad faltante queda no localizada. Ambas quedan fuera de disponibilidad hasta que el administrador la marque disponible, en mantenimiento o retirada. La reserva se considera devuelta cuando cada unidad asignada se recibió o quedó registrada como faltante con incidencia. El sistema conserva la incidencia, pero no calcula cargos ni determina responsabilidad.
+- **Decisión:** en retiro y devolución el administrador registra la condición (`correcto`, `dañado`, `faltante`) y una observación. Una unidad dañada queda en mantenimiento; una unidad faltante queda no localizada. Ambas quedan fuera de disponibilidad hasta que el administrador la marque disponible, en mantenimiento o retirada. La reserva se considera devuelta cuando cada unidad asignada se recibió o quedó registrada como faltante con incidencia. El sistema conserva la incidencia, pero no calcula cargos ni determina responsabilidad.
 - **Resuelve:** PA-11.
 ## Usuarios, notificaciones y reportes
 
@@ -129,6 +129,23 @@ Las decisiones siguientes son propuestas de diseño tomadas por Codex para hacer
 - **Origen:** decisión explícita del estudiante; permitida por la clase 5.
 - **Afecta:** organización de tareas y entrega, no las reglas del sistema.
 
+## Aclaraciones surgidas al revisar la arquitectura
+
+### D-27 — Estados generales y bloqueos de mantenimiento
+- **Decisión:** `mantenimiento` en el estado de unidad significa no alquilable hasta que un administrador cambie su estado. `MaintenanceBlock` bloquea una unidad de otro modo disponible solo para un intervalo programado.
+- **Origen:** aclaración de diseño para distinguir estado de inventario de bloqueo temporal, compatible con D-05/D-09.
+- **Afecta:** RN-02, RN-08, RN-09, HU-02 y HU-06.
+
+### D-28 — Total de reservas con varias líneas
+- **Decisión:** calcular los subtotales exactos por línea y sumarlos; redondear solo el total final a dos decimales, con mitad hacia arriba. Cada línea usa su tarifa vigente al confirmar, duración común y cantidad.
+- **Origen:** aclaración de diseño derivada del modelo multiequipo de D-08 y la tarifa de D-13.
+- **Afecta:** RN-15, HU-03.
+
+### D-29 — Retiro completo y condición inicial
+- **Decisión:** el retiro es completo o no se confirma: todas las unidades asignadas deben estar presentes y en condición `correcto`. Si alguna unidad está dañada o no localizada, no se entrega ninguna; se registra la incidencia y se actualiza su estado, la reserva sigue confirmada y el administrador debe resolver la unidad mediante reparación y habilitación, reasignación o cancelación antes de reintentar.
+- **Justificación:** evita custodia parcial y define qué ocurre si el inventario físico no coincide con la asignación.
+- **Origen:** decisión de diseño para completar el flujo de retiro indicado en D-17/D-19 y hacerlo implementable.
+- **Afecta:** RN-19, RN-20, HU-07 y la API de retiro.
+
 ## Estado de preguntas
 No quedan preguntas abiertas según las transcripciones disponibles. PA-17 y PA-18 se cerraron en `preguntas-abiertas.md`. Si la docente actualiza requisitos, se registrará como nueva decisión.
-

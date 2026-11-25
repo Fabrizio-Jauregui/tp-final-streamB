@@ -17,7 +17,7 @@ Fuera de alcance: kits, logística de envío, procesamiento o registro de pagos,
 ## Reglas de negocio
 
 - **RN-01 (D-04):** Cada unidad física alquilable pertenece a un tipo/modelo y posee un código único. En v1 se alquilan unidades individuales, no kits.
-- **RN-02 (D-05):** Una unidad tiene estado `disponible`, `mantenimiento`, `no localizada` o `retirada`; `no localizada` y `retirada` nunca se asignan.
+- **RN-02 (D-05, D-27):** Una unidad tiene estado `disponible`, `mantenimiento`, `no localizada` o `retirada`; `no localizada`, `retirada` y `mantenimiento` nunca se asignan. `mantenimiento` es un estado fuera de servicio hasta cambio administrativo; los bloqueos programados por intervalo se registran aparte para unidades disponibles.
 - **RN-03 (D-06):** Cada reserva especifica retiro y devolución como fecha/hora. El intervalo reservado es semiabierto `[retiro, devolución)`.
 - **RN-04 (D-06):** La devolución debe ser posterior al retiro; la duración debe ser de al menos 1 hora y como máximo 336 horas.
 - **RN-05 (D-06):** El retiro debe estar en el futuro y comenzar dentro de los 90 días desde la solicitud. Se usa la hora local del negocio `America/Argentina/Buenos_Aires` para validaciones y presentación.
@@ -30,12 +30,12 @@ Fuera de alcance: kits, logística de envío, procesamiento o registro de pagos,
 - **RN-12 (D-12):** Estados posibles: `confirmada`, `entregada`, `devuelta`, `cancelada` y `vencida`. La reserva pasa a `entregada` al registrar retiro, a `devuelta` al recibir todas las unidades o registrar faltantes con incidencia, y a `cancelada` al cancelarse.
 - **RN-13 (D-12):** Una reserva confirmada sin entrega pasa a `vencida` después de su hora de retiro. Una reserva entregada cuya hora de devolución pasó permanece ocupando las unidades y se marca demorada hasta el registro de devolución.
 - **RN-14 (D-13, D-14):** Cada tipo/modelo alquilable tiene una tarifa activa por hora en ARS. Sin tarifa activa no se puede reservar.
-- **RN-15 (D-13):** Total = tarifa por hora × duración exacta en horas × cantidad. La duración se calcula como minutos transcurridos ÷ 60. El total se redondea a dos decimales con mitad hacia arriba. Al confirmar se conserva el precio y total de esa reserva aunque luego cambie la tarifa del catálogo.
+- **RN-15 (D-13, D-28):** Subtotal de línea = tarifa por hora × duración exacta en horas × cantidad; total = suma de subtotales de las líneas. La duración se calcula como minutos transcurridos ÷ 60. El total se redondea a dos decimales con mitad hacia arriba. Al confirmar se conserva el precio y total de esa reserva aunque luego cambie la tarifa del catálogo.
 - **RN-16 (D-15):** El sistema muestra cotización, pero no procesa ni registra pagos, depósitos, deudas o reembolsos. El pago es externo y no condiciona la confirmación.
 - **RN-17 (D-16):** El cliente puede cancelar una reserva confirmada antes de la hora de retiro sin cargo dentro del sistema. Desde la hora de retiro no puede cancelarla desde su cuenta.
 - **RN-18 (D-16):** El administrador puede cancelar por operación una reserva `confirmada` o `vencida`, registrando motivo. Una reserva `entregada` debe cerrarse mediante devolución e incidencias, no cancelarse. Cancelar libera las unidades para solicitudes posteriores. No se calculan penalidades ni reembolsos.
-- **RN-19 (D-17):** Retiro y devolución ocurren en el local. El administrador registra fecha/hora real y las unidades involucradas. Solo una reserva confirmada puede entregarse.
-- **RN-20 (D-19):** En retiro y devolución, el administrador puede registrar condición `correcto`, `dañado` o `faltante` con observación. Unidad dañada queda en mantenimiento; unidad faltante queda `no localizada`. Ambas quedan fuera de disponibilidad hasta decisión administrativa. La reserva pasa a devuelta cuando cada unidad se recibió o se registró como faltante con incidencia.
+- **RN-19 (D-17, D-29):** Retiro y devolución ocurren en el local. El administrador registra fecha/hora real y las unidades involucradas. Solo una reserva confirmada puede entregarse. El retiro se confirma de forma completa: todas las unidades asignadas deben estar presentes y en condición correcta; si no, no se entrega ninguna y la reserva permanece confirmada para su resolución administrativa.
+- **RN-20 (D-19, D-29):** En retiro y devolución, el administrador puede registrar condición `correcto`, `dañado` o `faltante` con observación. Una unidad dañada queda en mantenimiento; una faltante queda `no localizada`; ambas quedan fuera de disponibilidad hasta decisión administrativa. Si en el retiro hay una unidad dañada o faltante, se registra la incidencia y su estado, no se confirma ninguna entrega y el administrador debe resolver la unidad mediante reparación/habilitación, reasignación o cancelación antes de reintentar. La reserva pasa a devuelta cuando cada unidad se recibió o se registró como faltante con incidencia.
 - **RN-21 (D-18):** Si vence la hora de devolución sin recepción, la unidad permanece ocupada y el sistema identifica reservas futuras afectadas. El administrador debe reasignar unidad o cancelar la reserva afectada con motivo; el cliente ve el cambio en el sistema. No hay cargo automático por demora.
 - **RN-22 (D-20):** Cliente se registra con nombre, email único, teléfono y contraseña; puede indicar una organización. Las contraseñas se almacenan como hash seguro, nunca en texto plano. No se requiere verificación por email.
 - **RN-23 (D-20):** Solo clientes se registran públicamente. Administradores se provisionan fuera del registro público.
@@ -63,6 +63,7 @@ Como cliente registrado, quiero reservar uno o más tipos de equipo para el mism
 - **Dada** una solicitud cuya cantidad no está completamente disponible para una línea, **cuando** el cliente intenta confirmar, **entonces** no se crea ninguna reserva parcial. (RN-08, RN-10)
 - **Dada** una fecha inválida, menor a 1 hora, mayor a 336 horas o fuera de la anticipación máxima, **cuando** se solicita la reserva, **entonces** el sistema la rechaza indicando la regla incumplida. (RN-03 a RN-05)
 - **Dada** una tarifa que cambia después de la confirmación, **cuando** se consulta la reserva anterior, **entonces** conserva el total confirmado originalmente. (RN-15)
+- **Dada** una reserva con varias líneas cuyos subtotales producen fracciones de centavo, **cuando** el sistema calcula el total, **entonces** suma los subtotales exactos y redondea solo el total final a dos decimales con mitad hacia arriba. (RN-15)
 
 ### HU-04 — Evitar doble asignación concurrente
 Como negocio, quiero impedir reservas simultáneas incompatibles para no prometer una unidad a dos clientes.
@@ -86,6 +87,7 @@ Como administrador, quiero gestionar tipos, tarifas y unidades para mantener el 
 Como administrador, quiero registrar movimientos físicos para conocer la custodia y condición del equipo.
 
 - **Dada** una reserva confirmada, **cuando** registro el retiro de todas sus unidades, **entonces** la reserva pasa a entregada y cada condición inicial queda registrada. (RN-12, RN-19, RN-20)
+- **Dada** una reserva con una unidad dañada o ausente al retiro, **cuando** el administrador registra la condición, **entonces** no se entrega ninguna unidad, se conserva la reserva confirmada, se registra la incidencia y el administrador debe reparar/habilitar, reasignar o cancelar antes de reintentar. (RN-19, RN-20)
 - **Dada** una reserva entregada, **cuando** registro las unidades recibidas y cualquier faltante con incidencia, **entonces** la reserva pasa a devuelta y queda registrada la condición de cada unidad. (RN-12, RN-19, RN-20)
 - **Dada** una unidad dañada o faltante al volver, **cuando** se registra la incidencia, **entonces** la unidad queda en mantenimiento o no localizada, respectivamente, y fuera de disponibilidad hasta decisión administrativa. (RN-20)
 
@@ -109,6 +111,7 @@ Como administrador, quiero consultar reservas, disponibilidad y demoras para org
 - El cliente intenta cancelar al llegar la hora de retiro: no puede; debe intervenir el administrador (RN-17, RN-18).
 - No se registra devolución a tiempo y existe reserva futura: la unidad sigue ocupada y el administrador resuelve el conflicto (RN-21).
 - Daño o faltante al volver: la unidad dañada queda en mantenimiento y la faltante no localizada hasta decisión administrativa (RN-20).
+- Daño o faltante detectado al retirar: no se entrega parcialmente la reserva; se conserva confirmada y requiere reparar/habilitar, reasignar o cancelar (RN-19, RN-20).
 - No existe tarifa para el modelo: no se ofrece para reserva (RN-14).
 
 ## Requisitos de entrega académica
@@ -127,16 +130,7 @@ La primera tarea de implementación no debe comenzar hasta que el plan técnico 
 
 ## Trazabilidad
 - Contexto: `mi idea.md`.
-- Decisiones de diseño: `decisiones.md` (`D-01` a `D-25`).
+- Decisiones de diseño: `decisiones.md` (`D-01` a `D-29`).
 - Términos: `glosario.md`.
 - Requisitos académicos conocidos en `preguntas-abiertas.md` (PA-17 y PA-18, resueltas).
 - Metodología y exigencias conocidas del curso: transcripciones, especialmente clase 5.
-
-
-
-
-
-
-
-
-
