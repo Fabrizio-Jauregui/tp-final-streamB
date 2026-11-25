@@ -47,7 +47,7 @@
 - **Cubre HU:** HU-02 a HU-05, HU-07, HU-08.
 - **Depende de:** T-02, T-03, T-04.
 - **Terminada cuando:** pruebas de migración verifican relaciones, checks de fechas/cantidad/importe e historial de asignaciones.
-- **Estado:** pendiente.
+- **Estado:** hecha.
 
 ### T-06 — Restricción de solapamiento en PostgreSQL
 - **Agente:** tester + backend.
