@@ -15,15 +15,39 @@ Sistema web para que una pequeña empresa gestione el alquiler de equipos audiov
 
 ## Estado
 
-Etapa de preparación y planificación. La estructura de frontend y backend está vacía; aún no se implementaron funcionalidades.
+T-01 implementa la base del backend y su endpoint de salud. Las funcionalidades del sistema siguen pendientes.
 
 ## Tecnologías previstas
 
 React + TypeScript, Node.js + TypeScript + Express y PostgreSQL son la propuesta documentada en `Docs/plan.md`. El stack podrá ajustarse si el plan técnico se revisa.
 
-## Requisitos previos, instalación y ejecución
+## Requisitos previos
 
-Pendiente: completar cuando se configure el proyecto en `backend/` y `frontend/`. No hay dependencias instalables ni comandos de ejecución definidos todavía.
+Node.js 22.12 o superior y npm. El backend usa Node.js con TypeScript y Express.
+
+## Instalación y ejecución del backend
+
+Desde la carpeta `backend/`:
+
+```powershell
+npm install
+npm run dev
+```
+
+El backend escucha en `http://localhost:3000` por defecto. Se puede cambiar el puerto con la variable `PORT`.
+
+La ruta `GET /health` devuelve `{"status":"ok"}` cuando el servidor está disponible.
+
+## Comprobaciones del backend
+
+Desde `backend/`:
+
+```powershell
+npm test
+npm run typecheck
+npm run build
+npm start
+```
 
 ## Variables de entorno
 
@@ -31,7 +55,7 @@ Los secretos y credenciales se configurarán localmente y en el proveedor de des
 
 ## Pruebas
 
-El flujo previsto es pruebas primero, implementación, revisión contra `Docs/spec.md` y `Docs/plan.md`, y commit por tarea. Los comandos se documentarán cuando se configure el backend y frontend.
+Cada tarea sigue el flujo de pruebas primero, implementación y revisión contra `Docs/spec.md` y `Docs/plan.md`. En el backend, `npm test` ejecuta Vitest con Supertest.
 
 ## Entrega
 

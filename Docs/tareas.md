@@ -11,7 +11,7 @@
 - **Cubre HU:** ninguna directamente.
 - **Depende de:** ninguna.
 - **Terminada cuando:** la prueba de salud falla por ruta ausente y pasa después de implementarla; el servidor inicia con los scripts documentados.
-- **Estado:** pendiente.
+- **Estado:** hecha.
 
 ### T-02 — PostgreSQL de prueba y ciclo de migraciones
 - **Agente:** tester + backend.
