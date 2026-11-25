@@ -29,7 +29,7 @@
 - **Cubre HU:** ninguna directamente; el comportamiento de identidad se cubre en T-08.
 - **Depende de:** T-02.
 - **Terminada cuando:** pruebas de migración verifican claves, nulabilidad, email único y relación sesión-usuario.
-- **Estado:** pendiente.
+- **Estado:** hecha.
 
 ### T-04 — Esquema de catálogo y unidades
 - **Agente:** tester + backend.
