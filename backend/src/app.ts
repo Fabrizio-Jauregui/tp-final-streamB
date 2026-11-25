@@ -2,6 +2,7 @@ import express, { type Express } from 'express';
 import { createAuthRouter } from './auth/auth.routes.ts';
 import { AuthService, DEFAULT_ACCESS_TOKEN_TTL_SECONDS } from './auth/auth.service.ts';
 import type { AuthDatabase } from './auth/auth.types.ts';
+import { createCatalogRouter } from './catalog/catalog.routes.ts';
 import { errorHandler, notFoundHandler } from './http/api-error.ts';
 
 export interface AppOptions {
@@ -31,6 +32,7 @@ export function createApp(options?: AppOptions): Express {
       now,
     );
     app.use('/api/auth', createAuthRouter(service, options.accessTokenSecret, now));
+    app.use('/api', createCatalogRouter(options.database, options.accessTokenSecret, now));
   }
 
   app.use(notFoundHandler);

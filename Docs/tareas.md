@@ -1,6 +1,6 @@
 # Tareas — Alquiler audiovisual
 
-> Derivadas de Docs/spec.md y Docs/plan.md. Los identificadores nombran las tareas; el orden de implementación lo determinan las dependencias, no la numeración de las HU. Todas están pendientes. Una tarea solo se marca hecha cuando sus pruebas pasan y el revisor la aprueba.
+> Derivadas de Docs/spec.md y Docs/plan.md. Los identificadores nombran las tareas; el orden de implementación lo determinan las dependencias, no la numeración de las HU. El estado se indica en cada tarea. Una tarea solo se marca hecha cuando sus pruebas pasan y el revisor la aprueba.
 
 ## Etapa 1 — Base backend y persistencia
 
@@ -85,7 +85,7 @@
 - **Cubre HU:** HU-01, HU-06.
 - **Depende de:** T-04, T-08.
 - **Terminada cuando:** pruebas cubren catálogo, permisos, tarifas ausentes, tipos inactivos, estados de unidad y códigos duplicados.
-- **Estado:** pendiente.
+- **Estado:** hecha.
 
 ### T-10 — Reloj inyectable y validación temporal
 - **Agente:** tester + backend.
