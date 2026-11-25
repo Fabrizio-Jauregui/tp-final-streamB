@@ -65,7 +65,7 @@
 - **Cubre HU:** HU-06 a HU-08.
 - **Depende de:** T-02 a T-05.
 - **Terminada cuando:** pruebas de migración verifican relaciones, rangos, historial conservado e índice para bloqueos vigentes.
-- **Estado:** pendiente.
+- **Estado:** hecha.
 
 ## Etapa 2 — Backend: identidad, catálogo y reglas comunes
 
