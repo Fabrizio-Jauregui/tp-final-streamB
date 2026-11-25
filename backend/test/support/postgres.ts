@@ -1,6 +1,7 @@
 import { createServer } from 'node:net';
 import { Client } from 'pg';
 import { PGlite } from '@electric-sql/pglite';
+import { btree_gist } from '@electric-sql/pglite/contrib/btree_gist';
 import { PGLiteSocketServer } from '@electric-sql/pglite-socket';
 
 export interface TestPostgres {
@@ -33,7 +34,7 @@ async function availablePort(): Promise<number> {
 }
 
 export async function startTestPostgres(): Promise<TestPostgres> {
-  const database = await PGlite.create();
+  const database = await PGlite.create({ extensions: { btree_gist } });
   let server: PGLiteSocketServer | undefined;
   let client: Client | undefined;
 

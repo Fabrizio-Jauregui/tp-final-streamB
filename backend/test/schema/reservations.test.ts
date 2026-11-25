@@ -230,6 +230,41 @@ describe('Reservation, ReservationLine, and ReservationAllocation schema', () =>
       .rejects.toMatchObject({ code: '23514' });
   });
 
+  it('rejects overlapping allocations, accepts adjacent periods, and reuses released units', async () => {
+    const userId = await insertUser();
+    const equipmentTypeId = await insertEquipmentType();
+    const unitId = await insertAssetUnit(equipmentTypeId);
+
+    const firstReservationId = await insertReservation(userId, firstStart, firstEnd);
+    const firstLineId = await insertLine(firstReservationId, equipmentTypeId);
+    await insertAllocation(firstLineId, unitId, firstStart, firstEnd);
+
+    const overlappingReservationId = await insertReservation(
+      userId,
+      '2030-01-01T10:30:00.000Z',
+      '2030-01-01T11:30:00.000Z',
+    );
+    const overlappingLineId = await insertLine(overlappingReservationId, equipmentTypeId);
+    await expect(insertAllocation(
+      overlappingLineId,
+      unitId,
+      '2030-01-01T10:30:00.000Z',
+      '2030-01-01T11:30:00.000Z',
+    )).rejects.toMatchObject({ code: '23P01' });
+
+    const adjacentReservationId = await insertReservation(userId, firstEnd, nextEnd);
+    const adjacentLineId = await insertLine(adjacentReservationId, equipmentTypeId);
+    await expect(insertAllocation(adjacentLineId, unitId, firstEnd, nextEnd)).resolves.toBeUndefined();
+
+    await client.query(
+      'UPDATE reservation_allocations SET released_at = now() WHERE reservation_line_id = $1',
+      [firstLineId],
+    );
+    const reusableReservationId = await insertReservation(userId, firstStart, firstEnd);
+    const reusableLineId = await insertLine(reusableReservationId, equipmentTypeId);
+    await expect(insertAllocation(reusableLineId, unitId, firstStart, firstEnd)).resolves.toBeUndefined();
+  });
+
   it('preserves released allocation history and permits only one open custody per unit', async () => {
     const userId = await insertUser();
     const equipmentTypeId = await insertEquipmentType();

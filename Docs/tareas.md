@@ -56,7 +56,7 @@
 - **Cubre HU:** HU-02, HU-04.
 - **Depende de:** T-05.
 - **Terminada cuando:** pruebas con PostgreSQL rechazan intervalos superpuestos, aceptan intervalos adyacentes y permiten reutilizar asignaciones liberadas.
-- **Estado:** pendiente.
+- **Estado:** hecha.
 
 ### T-07 — Esquema de mantenimiento y eventos operativos
 - **Agente:** tester + backend.

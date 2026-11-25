@@ -1,0 +1,2 @@
+ALTER TABLE reservation_allocations
+  DROP CONSTRAINT reservation_allocations_no_active_overlap;
