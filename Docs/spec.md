@@ -28,7 +28,7 @@ Fuera de alcance: kits, logística de envío, procesamiento o registro de pagos,
 - **RN-10 (D-10):** Si cliente, fechas, tarifa activa y disponibilidad total son válidos, la reserva se confirma en una sola operación. Si alguna línea no tiene cantidad suficiente, no se crea una reserva parcial.
 - **RN-11 (D-11):** La asignación se valida atómicamente. En competencia simultánea confirma la transacción que se complete primero; las demás solicitudes incompatibles fallan como no disponibles y no crean reserva.
 - **RN-12 (D-12):** Estados posibles: `confirmada`, `entregada`, `devuelta`, `cancelada` y `vencida`. La reserva pasa a `entregada` al registrar retiro, a `devuelta` al recibir todas las unidades o registrar faltantes con incidencia, y a `cancelada` al cancelarse.
-- **RN-13 (D-12):** Una reserva confirmada sin entrega pasa a `vencida` después de su hora de retiro. Una reserva entregada cuya hora de devolución pasó permanece ocupando las unidades y se marca demorada hasta el registro de devolución.
+- **RN-13 (D-12):** Una reserva confirmada sin entrega pasa a `vencida` cuando se alcanza o supera su hora de retiro. Una reserva entregada cuya hora de devolución se alcanzó o superó permanece ocupando las unidades y se marca demorada hasta el registro de devolución.
 - **RN-14 (D-13, D-14):** Cada tipo/modelo alquilable tiene una tarifa activa por hora en ARS. Sin tarifa activa no se puede reservar.
 - **RN-15 (D-13, D-28):** Subtotal de línea = tarifa por hora × duración exacta en horas × cantidad; total = suma de subtotales de las líneas. La duración se calcula como minutos transcurridos ÷ 60. El total se redondea a dos decimales con mitad hacia arriba. Al confirmar se conserva el precio y total de esa reserva aunque luego cambie la tarifa del catálogo.
 - **RN-16 (D-15):** El sistema muestra cotización, pero no procesa ni registra pagos, depósitos, deudas o reembolsos. El pago es externo y no condiciona la confirmación.
@@ -94,8 +94,8 @@ Como administrador, quiero registrar movimientos físicos para conocer la custod
 ### HU-08 — Gestionar vencimientos y demoras
 Como administrador, quiero identificar reservas no retiradas y devoluciones tardías para actuar sobre inventario afectado.
 
-- **Dada** una reserva confirmada sin entrega pasada su hora de retiro, **cuando** el sistema actualiza su estado, **entonces** queda vencida y no conserva asignación activa. (RN-12, RN-13)
-- **Dada** una unidad no devuelta a la hora pactada y una reserva futura afectada, **cuando** el sistema detecta la demora, **entonces** conserva la unidad ocupada y muestra el conflicto al administrador. (RN-13, RN-21)
+- **Dada** una reserva confirmada sin entrega cuya hora de retiro se alcanzó o superó, **cuando** el sistema actualiza su estado, **entonces** queda vencida y no conserva asignación activa. (RN-12, RN-13)
+- **Dada** una unidad no devuelta cuando se alcanza o supera la hora pactada y una reserva futura afectada, **cuando** el sistema detecta la demora, **entonces** conserva la unidad ocupada y muestra el conflicto al administrador. (RN-13, RN-21)
 
 ### HU-09 — Consultar operación
 Como administrador, quiero consultar reservas, disponibilidad y demoras para organizar el negocio.

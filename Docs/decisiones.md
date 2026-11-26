@@ -59,7 +59,7 @@ Las decisiones siguientes son propuestas de diseño tomadas por Codex para hacer
 - **Resuelve:** PA-05.
 
 ### D-12 — Estados de reserva
-- **Decisión:** estados: `confirmada`, `entregada`, `devuelta`, `cancelada` y `vencida`. Una reserva confirmada pasa a entregada al registrar la entrega; a devuelta al recibir todas las unidades o registrar faltantes con incidencia; a cancelada si el cliente cancela una confirmada antes del retiro o el administrador cancela una confirmada/vencida; a vencida cuando no se registró entrega y ya pasó la hora de retiro. Las reservas entregadas que superan la hora de devolución sin cierre generan estado operativo de demora y no liberan unidades.
+- **Decisión:** estados: `confirmada`, `entregada`, `devuelta`, `cancelada` y `vencida`. Una reserva confirmada pasa a entregada al registrar la entrega; a devuelta al recibir todas las unidades o registrar faltantes con incidencia; a cancelada si el cliente cancela una confirmada antes del retiro o el administrador cancela una confirmada/vencida; a vencida cuando no se registró entrega y la hora de retiro ya se alcanzó. Las reservas entregadas que alcanzan o superan la hora de devolución sin cierre generan estado operativo de demora y no liberan unidades.
 - **Resuelve:** PA-04, PA-09, PA-10.
 ## Precio, pagos y cancelaciones
 

@@ -4,11 +4,14 @@ import { AuthService, DEFAULT_ACCESS_TOKEN_TTL_SECONDS } from './auth/auth.servi
 import type { AuthDatabase } from './auth/auth.types.ts';
 import { createCatalogRouter } from './catalog/catalog.routes.ts';
 import { errorHandler, notFoundHandler } from './http/api-error.ts';
+import { systemClock, type Clock } from './time/clock.ts';
 
 export interface AppOptions {
   database: AuthDatabase;
   accessTokenSecret: string;
   accessTokenTtlSeconds?: number;
+  clock?: Clock;
+  /** Adaptador temporal para los llamadores previos a la interfaz Clock. */
   now?: () => Date;
 }
 
@@ -24,15 +27,15 @@ export function createApp(options?: AppOptions): Express {
     if (!options.database || !options.accessTokenSecret) {
       throw new Error('database y ACCESS_TOKEN_SECRET son obligatorios para habilitar autenticación.');
     }
-    const now = options.now ?? (() => new Date());
+    const clock = options.clock ?? (options.now ? { now: options.now } : systemClock);
     const service = new AuthService(
       options.database,
       options.accessTokenSecret,
       options.accessTokenTtlSeconds ?? DEFAULT_ACCESS_TOKEN_TTL_SECONDS,
-      now,
+      clock,
     );
-    app.use('/api/auth', createAuthRouter(service, options.accessTokenSecret, now));
-    app.use('/api', createCatalogRouter(options.database, options.accessTokenSecret, now));
+    app.use('/api/auth', createAuthRouter(service, options.accessTokenSecret, clock));
+    app.use('/api', createCatalogRouter(options.database, options.accessTokenSecret, clock));
   }
 
   app.use(notFoundHandler);

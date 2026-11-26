@@ -94,7 +94,7 @@
 - **Cubre HU:** HU-02, HU-03, HU-05, HU-08.
 - **Depende de:** T-01.
 - **Terminada cuando:** pruebas con reloj fijo cubren ahora/futuro/pasado, límites de 1 y 336 horas, anticipación de 90 días, zona Buenos Aires y rangos adyacentes.
-- **Estado:** pendiente.
+- **Estado:** hecha.
 
 ### T-11 — Servicio de bloqueos de mantenimiento
 - **Agente:** tester + backend.

@@ -4,6 +4,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import type { Client } from 'pg';
 import { createApp } from '../src/app.ts';
 import { migrateUp } from '../src/database/migrator.ts';
+import { FixedClock } from '../src/time/clock.ts';
 import { startTestPostgres, stopTestPostgres, type TestPostgres } from './support/postgres.js';
 
 const migrationDirectory = fileURLToPath(new URL('../migrations/', import.meta.url));
@@ -30,6 +31,44 @@ describe('authentication HTTP routes', () => {
     const configuredCreateApp = createApp as unknown as (options: Record<string, unknown>) => ReturnType<typeof createApp>;
     expect(() => configuredCreateApp({ database: client, accessTokenSecret: 'short' }))
       .toThrow('ACCESS_TOKEN_SECRET debe contener al menos 32 bytes.');
+  });
+
+  it('uses the injected clock for account timestamps and token expiry checks', async () => {
+    const instant = new Date('2026-04-01T12:00:00.000Z');
+    const clock = new FixedClock(instant);
+    const configuredCreateApp = createApp as unknown as (options: Record<string, unknown>) => ReturnType<typeof createApp>;
+    const fixedApp = configuredCreateApp({
+      database: client,
+      accessTokenSecret: secret,
+      accessTokenTtlSeconds: 60,
+      clock,
+    });
+    const registration = await request(fixedApp)
+      .post('/api/auth/register')
+      .send({ fullName: 'Fixed Clock', email: 'fixed-clock@example.test', phone: '555-0199', password })
+      .expect(201);
+    const persistedUser = await client.query<{ created_at: Date }>(
+      'SELECT created_at FROM users WHERE id = $1',
+      [registration.body.id],
+    );
+    expect(persistedUser.rows[0]?.created_at.toISOString()).toBe(instant.toISOString());
+
+    const login = await request(fixedApp)
+      .post('/api/auth/login')
+      .send({ email: 'fixed-clock@example.test', password })
+      .expect(200);
+    const payload = JSON.parse(Buffer.from(login.body.accessToken.split('.')[1], 'base64url').toString('utf8')) as {
+      iat: number;
+      exp: number;
+    };
+    expect(payload.iat).toBe(instant.getTime() / 1000);
+    expect(payload.exp - payload.iat).toBe(60);
+
+    clock.advance(60_000);
+    await request(fixedApp)
+      .post('/api/auth/logout')
+      .set('Authorization', `Bearer ${login.body.accessToken}`)
+      .expect(401);
   });
 
   it('registers clients with a password hash and returns no credential fields', async () => {

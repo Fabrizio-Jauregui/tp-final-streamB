@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import type { QueryResultRow } from 'pg';
 import { ApiError } from '../http/api-error.ts';
+import { systemClock, type Clock } from '../time/clock.ts';
 import { signAccessToken } from './access-token.ts';
 import { hashPassword, verifyPassword } from './password.ts';
 import type { AuthDatabase, LoginInput, LoginResult, PublicUser, RegisterInput } from './auth.types.ts';
@@ -22,18 +23,18 @@ export class AuthService {
   readonly database: AuthDatabase;
   readonly accessTokenTtlSeconds: number;
   private readonly accessTokenSecret: string;
-  private readonly now: () => Date;
+  private readonly clock: Clock;
 
   constructor(
     database: AuthDatabase,
     accessTokenSecret: string,
     accessTokenTtlSeconds = DEFAULT_ACCESS_TOKEN_TTL_SECONDS,
-    now: () => Date = () => new Date(),
+    clock: Clock = systemClock,
   ) {
     this.database = database;
     this.accessTokenSecret = accessTokenSecret;
     this.accessTokenTtlSeconds = accessTokenTtlSeconds;
-    this.now = now;
+    this.clock = clock;
     if (Buffer.byteLength(accessTokenSecret, 'utf8') < 32) {
       throw new Error('ACCESS_TOKEN_SECRET debe contener al menos 32 bytes.');
     }
@@ -60,7 +61,7 @@ export class AuthService {
           (id, full_name, email, email_normalized, phone, organization, password_hash, role, is_active, created_at)
          VALUES ($1, $2, $3, $4, $5, $6, $7, 'client', TRUE, $8)
          RETURNING id, full_name, email, phone, organization, role`,
-        [id, input.fullName, input.email, input.emailNormalized, input.phone, input.organization, passwordHash, this.now()],
+        [id, input.fullName, input.email, input.emailNormalized, input.phone, input.organization, passwordHash, this.clock.now()],
       );
       return this.toPublicUser(result.rows[0]!);
     } catch (error) {
@@ -85,7 +86,7 @@ export class AuthService {
       throw new ApiError(401, 'invalid_credentials', 'Email o contraseña incorrectos.');
     }
 
-    const now = this.now();
+    const now = this.clock.now();
     const issuedAt = Math.floor(now.getTime() / 1000);
     const expiresAt = issuedAt + this.accessTokenTtlSeconds;
     const tokenId = randomUUID();
@@ -106,7 +107,7 @@ export class AuthService {
   async revokeSession(tokenId: string): Promise<void> {
     await this.database.query(
       'UPDATE auth_sessions SET revoked_at = $2 WHERE token_id = $1 AND revoked_at IS NULL',
-      [tokenId, this.now()],
+      [tokenId, this.clock.now()],
     );
   }
 

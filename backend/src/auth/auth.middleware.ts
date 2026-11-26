@@ -1,6 +1,7 @@
 import type { Request, RequestHandler } from 'express';
 import type { QueryResultRow } from 'pg';
 import { ApiError, sendApiError } from '../http/api-error.ts';
+import { systemClock, type Clock } from '../time/clock.ts';
 import { verifyAccessToken } from './access-token.ts';
 import type { AuthDatabase, AuthenticatedUser, UserRole } from './auth.types.ts';
 
@@ -20,7 +21,7 @@ function unauthorized(response: Parameters<RequestHandler>[1]): void {
 export function requireAuth(
   database: AuthDatabase,
   accessTokenSecret: string,
-  now: () => Date = () => new Date(),
+  clock: Clock = systemClock,
 ): RequestHandler {
   return async (request, response, next) => {
     const authorization = request.header('authorization');
@@ -31,7 +32,7 @@ export function requireAuth(
     }
 
     let claims;
-    const currentTime = now();
+    const currentTime = clock.now();
     try {
       claims = await verifyAccessToken(match[1]!, accessTokenSecret, currentTime);
     } catch {

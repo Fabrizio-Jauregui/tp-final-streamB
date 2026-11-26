@@ -1,4 +1,5 @@
 import { ApiError } from '../http/api-error.ts';
+import { systemClock, type Clock } from '../time/clock.ts';
 
 export type AssetUnitStatus = 'available' | 'maintenance' | 'missing' | 'retired';
 
@@ -106,14 +107,14 @@ function mapDatabaseError(error: unknown): never {
 
 export class CatalogService {
   private readonly repository: CatalogRepository;
-  private readonly now: () => Date;
+  private readonly clock: Clock;
 
   constructor(
     repository: CatalogRepository,
-    now: () => Date = () => new Date(),
+    clock: Clock = systemClock,
   ) {
     this.repository = repository;
-    this.now = now;
+    this.clock = clock;
   }
 
   async getPublicEquipmentTypes(): Promise<Array<Pick<EquipmentTypeRecord, 'id' | 'name' | 'description' | 'hourlyRate'> & { isRentable: boolean }>> {
@@ -139,7 +140,7 @@ export class CatalogService {
     const hourlyRate = input.hourlyRate === undefined ? null : parseRate(input.hourlyRate);
     const isActive = input.isActive === undefined ? true : parseActive(input.isActive);
     try {
-      return await this.repository.insertEquipmentType({ name, description, hourlyRate, isActive }, this.now());
+      return await this.repository.insertEquipmentType({ name, description, hourlyRate, isActive }, this.clock.now());
     } catch (error) {
       return mapDatabaseError(error);
     }
@@ -194,7 +195,7 @@ export class CatalogService {
       throw new ApiError(404, 'not_found', 'No se encontró el tipo de equipo solicitado.');
     }
     try {
-      return await this.repository.insertAssetUnit({ equipmentTypeId, code, status }, this.now());
+      return await this.repository.insertAssetUnit({ equipmentTypeId, code, status }, this.clock.now());
     } catch (error) {
       return mapDatabaseError(error);
     }

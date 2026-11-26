@@ -2,6 +2,7 @@ import { Router, type Request } from 'express';
 import type { AuthDatabase } from '../auth/auth.types.ts';
 import { requireAuth, requireRole } from '../auth/auth.middleware.ts';
 import { ApiError } from '../http/api-error.ts';
+import type { Clock } from '../time/clock.ts';
 import { CatalogService, type AssetUnitStatus } from './catalog.service.ts';
 import { PostgresCatalogRepository } from './catalog.repository.ts';
 
@@ -15,17 +16,17 @@ function queryText(request: Request, key: string): string | undefined {
 export function createCatalogRouter(
   database: AuthDatabase,
   accessTokenSecret: string,
-  now: () => Date = () => new Date(),
+  clock: Clock,
 ): Router {
   const router = Router();
-  const service = new CatalogService(new PostgresCatalogRepository(database), now);
+  const service = new CatalogService(new PostgresCatalogRepository(database), clock);
   const admin = Router();
 
   router.get('/equipment-types', async (_request, response) => {
     response.status(200).json(await service.getPublicEquipmentTypes());
   });
 
-  admin.use(requireAuth(database, accessTokenSecret, now), requireRole('admin'));
+  admin.use(requireAuth(database, accessTokenSecret, clock), requireRole('admin'));
   admin.get('/equipment-types', async (_request, response) => {
     response.status(200).json(await service.getAdminEquipmentTypes());
   });

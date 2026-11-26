@@ -1,5 +1,6 @@
 import { Router, type Request } from 'express';
 import { ApiError } from '../http/api-error.ts';
+import type { Clock } from '../time/clock.ts';
 import { requireAuth } from './auth.middleware.ts';
 import { AuthService } from './auth.service.ts';
 import type { LoginInput, RegisterInput } from './auth.types.ts';
@@ -74,7 +75,7 @@ function loginInput(request: Request): LoginInput {
   return { emailNormalized, password };
 }
 
-export function createAuthRouter(service: AuthService, accessTokenSecret: string, now: () => Date): Router {
+export function createAuthRouter(service: AuthService, accessTokenSecret: string, clock: Clock): Router {
   const router = Router();
   router.post('/register', async (request, response) => {
     const user = await service.register(registrationInput(request));
@@ -86,7 +87,7 @@ export function createAuthRouter(service: AuthService, accessTokenSecret: string
     response.status(200).json(result);
   });
 
-  router.post('/logout', requireAuth(service.database, accessTokenSecret, now), async (_request, response) => {
+  router.post('/logout', requireAuth(service.database, accessTokenSecret, clock), async (_request, response) => {
     await service.revokeSession(response.locals.authSession.tokenId as string);
     response.status(204).end();
   });
